@@ -1,0 +1,38 @@
+version: "3.8"
+services:
+  master:
+    image: mysql:8
+    container_name: mysql-master
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3307:3306"       # host:container (tuỳ muốn truy cập bên ngoài)
+    volumes:
+      - ./master/my.cnf:/etc/mysql/conf.d/my.cnf:ro
+      - master-data:/var/lib/mysql
+      - ./master/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - mysql-net
+
+  slave:
+    image: mysql:8
+    container_name: mysql-slave
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3308:3306"
+    volumes:
+      - ./slave/my.cnf:/etc/mysql/conf.d/my.cnf:ro
+      - slave-data:/var/lib/mysql
+    depends_on:
+      - master
+    networks:
+      - mysql-net
+
+volumes:
+  master-data:
+  slave-data:
+
+networks:
+  mysql-net:
+    driver: bridge
